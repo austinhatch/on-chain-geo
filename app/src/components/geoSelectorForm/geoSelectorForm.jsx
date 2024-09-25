@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import styles from "./geoSelectorForm.module.scss";
 
-const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode }) => {
-  console.log(coordinates);
-  console.log(prefillData)
-  const [startDate, setStartDate] = useState(prefillData?.startDate || "");
-  const [endDate, setEndDate] = useState(prefillData?.endDate || "");
-  const [radius, setRadius] = useState(prefillData?.radius || "");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
-  const [name, setName] = useState(prefillData?.name || "");
+const GeoSelectorForm = ({
+  coordinates,
+  prefillData,
+  setSelectedRadius,
+  editMode,
+}) => {
+  const [startDate, setStartDate] = useState(prefillData?.startDate || null);
+  const [endDate, setEndDate] = useState(prefillData?.endDate || null);
+  const [radius, setRadius] = useState(prefillData?.radius || null);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [name, setName] = useState(prefillData?.name || null);
   const [unit, setUnit] = useState("miles");
+
+  const [error, setError] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -23,10 +28,29 @@ const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode
       longitude,
     });
     if (editMode) {
-      console.log("Edit Mode")
+      console.log("Edit Mode");
+    } else {
+      console.log("Create Mode");
     }
-    else {
-      console.log("Create Mode")
+  };
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
+    if (newStartDate >= endDate) {
+      setError("End date must be greater than start date.");
+    } else {
+      setError("");
+    }
+  };
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+    if (newEndDate <= startDate) {
+      setError("End date must be greater than start date.");
+    } else {
+      setError("");
     }
   };
 
@@ -53,6 +77,7 @@ const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode
                 value={coordinates.lat.toFixed(6)}
                 contentEditable="false"
                 onChange={(e) => setLatitude(e.target.value)}
+                required
               />
             </label>
             <label>
@@ -61,6 +86,7 @@ const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode
                 value={coordinates.lng.toFixed(6)}
                 contentEditable="false"
                 onChange={(e) => setLongitude(e.target.value)}
+                required
               />
             </label>
           </div>
@@ -68,18 +94,18 @@ const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode
         <label>
           Start Date:
           <input
-            type="date"
+            type="datetime-local"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={handleStartDateChange}
             required
           />
         </label>
         <label>
           End Date:
           <input
-            type="date"
+            type="datetime-local"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={handleEndDateChange}
             required
           />
         </label>
@@ -108,10 +134,12 @@ const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode
             required
           />
         </label>
-        <button type="submit">Submit</button>
-
+        <button type="submit" disabled={!!error}>
+          Submit
+        </button>
+        <p className={styles.errorText}>{error}</p>
       </div>
-    </form >
+    </form>
   );
 };
 

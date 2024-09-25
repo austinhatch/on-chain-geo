@@ -19,8 +19,9 @@ const defaultCenter = {
 };
 
 const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [center, setCenter] = useState(defaultCenter);
+  console.log("Coordinates", coordinates);
+  const [selectedPosition, setSelectedPosition] = useState(coordinates);
+  const [center, setCenter] = useState(coordinates || defaultCenter);
   const autocompleteRef = useRef(null);
 
   const { isLoaded } = useJsApiLoader({
@@ -31,36 +32,29 @@ const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
   useEffect(() => {
     const fetchLocation = async () => {
       try {
-        if (coordinates) {
-          console.log(coordinates)
-          setCenter(coordinates);
-          setSelectedPosition(coordinates);
-        }
-        else {
-          const response = await fetch("https://ipapi.co/json/");
-          const data = await response.json();
-          setCenter({ lat: data.latitude, lng: data.longitude });
-        }
-
+        console.log("Fetching location...");
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        setCenter({ lat: data.latitude, lng: data.longitude });
+        setSelectedPosition({ lat: data.latitude, lng: data.longitude });
+        onCoordinateSelect({ lat: data.latitude, lng: data.longitude });
       } catch (error) {
         console.error("Error fetching location:", error);
       }
     };
-
-    fetchLocation();
+    if (!coordinates) {
+      fetchLocation();
+    }
   }, []);
 
-  const handleMapClick = useCallback(
-    (event) => {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setSelectedPosition({ lat, lng });
-      if (onCoordinateSelect) {
-        onCoordinateSelect({ lat, lng });
-      }
-    },
-    [onCoordinateSelect]
-  );
+  const handleMapClick = useCallback((event) => {
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    setSelectedPosition({ lat, lng });
+    if (onCoordinateSelect) {
+      onCoordinateSelect({ lat, lng });
+    }
+  });
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
@@ -102,10 +96,7 @@ const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
             fontSize: `14px`,
             outline: `none`,
             textOverflow: `ellipses`,
-            position: "absolute",
-            left: "50%",
-            marginLeft: "-120px",
-            top: "10px",
+            margin: "10px",
           }}
         />
       </Autocomplete>
