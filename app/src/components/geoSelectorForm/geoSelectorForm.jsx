@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import styles from "./geoSelectorForm.module.scss";
 
-const GeoSelectorForm = ({ coordinates, setSelectedRadius }) => {
+const GeoSelectorForm = ({ coordinates, prefillData, setSelectedRadius, editMode }) => {
   console.log(coordinates);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [radius, setRadius] = useState("");
+  console.log(prefillData)
+  const [startDate, setStartDate] = useState(prefillData?.startDate || "");
+  const [endDate, setEndDate] = useState(prefillData?.endDate || "");
+  const [radius, setRadius] = useState(prefillData?.radius || "");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [name, setName] = useState(prefillData?.name || "");
   const [unit, setUnit] = useState("miles");
 
   const handleSubmit = (event) => {
@@ -19,6 +22,12 @@ const GeoSelectorForm = ({ coordinates, setSelectedRadius }) => {
       latitude,
       longitude,
     });
+    if (editMode) {
+      console.log("Edit Mode")
+    }
+    else {
+      console.log("Create Mode")
+    }
   };
 
   const handleRadiusChange = (value) => {
@@ -35,13 +44,13 @@ const GeoSelectorForm = ({ coordinates, setSelectedRadius }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <div className={styles.parentContainer}>
         {coordinates && (
-          <div>
+          <div className={styles.coordinatesContainer}>
             <label>
               Latitude:
               <input
-                value={coordinates.lat}
+                value={coordinates.lat.toFixed(6)}
                 contentEditable="false"
                 onChange={(e) => setLatitude(e.target.value)}
               />
@@ -49,7 +58,7 @@ const GeoSelectorForm = ({ coordinates, setSelectedRadius }) => {
             <label>
               Longitude:
               <input
-                value={coordinates.lng}
+                value={coordinates.lng.toFixed(6)}
                 contentEditable="false"
                 onChange={(e) => setLongitude(e.target.value)}
               />
@@ -62,38 +71,47 @@ const GeoSelectorForm = ({ coordinates, setSelectedRadius }) => {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
+            required
           />
         </label>
-      </div>
-      <div>
         <label>
           End Date:
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            required
           />
         </label>
-      </div>
-      <div>
         <label>
           Radius:
           <input
             type="number"
             value={radius}
             onChange={(e) => handleRadiusChange(e.target.value)}
+            required
           />
           <select
             value={unit}
             onChange={(e) => handleUnitChange(e.target.value)}
+            required
           >
             <option value="miles">Miles</option>
             <option value="yards">Yards</option>
           </select>
         </label>
+        <label>
+          Name:
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </label>
+        <button type="submit">Submit</button>
+
       </div>
-      <button type="submit">Submit</button>
-    </form>
+    </form >
   );
 };
 

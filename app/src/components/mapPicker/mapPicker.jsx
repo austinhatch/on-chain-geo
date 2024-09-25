@@ -6,10 +6,11 @@ import {
   Autocomplete,
   Circle,
 } from "@react-google-maps/api";
+import styles from "./mapPicker.module.scss";
 
 const containerStyle = {
   width: "100%",
-  height: "400px",
+  height: "100%",
 };
 
 const defaultCenter = {
@@ -17,23 +18,30 @@ const defaultCenter = {
   lng: -0.09,
 };
 
-const MapPicker = ({ onCoordinateSelect, radius }) => {
+const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [center, setCenter] = useState(defaultCenter);
   const autocompleteRef = useRef(null);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY, // Replace with your API key
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ["places"], // Add the places library
   });
 
   useEffect(() => {
     const fetchLocation = async () => {
       try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
-        console.log(data);
-        setCenter({ lat: data.latitude, lng: data.longitude });
+        if (coordinates) {
+          console.log(coordinates)
+          setCenter(coordinates);
+          setSelectedPosition(coordinates);
+        }
+        else {
+          const response = await fetch("https://ipapi.co/json/");
+          const data = await response.json();
+          setCenter({ lat: data.latitude, lng: data.longitude });
+        }
+
       } catch (error) {
         console.error("Error fetching location:", error);
       }
@@ -75,7 +83,7 @@ const MapPicker = ({ onCoordinateSelect, radius }) => {
   const radiusInMeters = radius * 1609.34;
 
   return (
-    <div>
+    <div className={styles.parentContainer}>
       <Autocomplete
         onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
         onPlaceChanged={handlePlaceChanged}
@@ -114,9 +122,9 @@ const MapPicker = ({ onCoordinateSelect, radius }) => {
               center={selectedPosition}
               radius={radiusInMeters}
               options={{
-                fillColor: "rgba(173, 216, 230, 0.5)",
+                fillColor: "rgba(173, 216, 230, 0.75)",
                 strokeColor: "rgba(0, 0, 255, 0.5)",
-                strokeWeight: 1,
+                strokeWeight: 2,
               }}
             />
           </>
