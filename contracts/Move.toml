@@ -1,9 +1,10 @@
 [package]
-name = "on-chain-geo-contracts"
+name = "on_chain_geo"
 version = "1.0.0"
 authors = []
 
 [addresses]
+my_management_addr='0xc58194fcaa565001385cd1f00e48367cbf455ac854444d83fac042004ef1736b'
 
 [dev-addresses]
 
@@ -11,5 +12,10 @@ authors = []
 git = "https://github.com/aptos-labs/aptos-core.git"
 rev = "mainnet"
 subdir = "aptos-move/framework/aptos-framework"
+
+[dependencies.AptosTokenObjects]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-token-objects"
 
 [dev-dependencies]
