@@ -2,8 +2,12 @@
 import React, { useState, useEffect } from "react";
 import GeoCard from "../../components/geoCard/geoCard";
 import styles from "./myGeos.module.scss";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { aptos } from "../../configs/aptos";
+import { getGeoFences } from "../../utils/aptos/getOwnedGeos";
 
 const MyGeos = () => {
+  const { wallet, account } = useWallet();
   const [ownedGeos, setOwnedGeos] = useState([]);
 
   useEffect(() => {
@@ -11,20 +15,15 @@ const MyGeos = () => {
       /**
        * TODO: Fetch owned geos from Aptos
        */
-      setOwnedGeos([
-        {
-          id: 1,
-          name: "Home",
-          description: "My House",
-          radius: 0.001,
-          lat: 25.7479868,
-          long: -80.319509,
-          checkins: 10,
-        },
-      ]);
+      if (account) {
+        const geoFences = await getGeoFences(account.address);
+        console.log(geoFences);
+        setOwnedGeos(geoFences);
+      }
     };
+
     getOwnedGeos();
-  }, []);
+  }, [account]);
 
   return (
     <div className={styles.parentContainer}>
@@ -33,8 +32,8 @@ const MyGeos = () => {
       </div>
       {ownedGeos && ownedGeos.length > 0 ? (
         <div className={styles.geosContainer}>
-          {ownedGeos.map((geo) => (
-            <GeoCard key={geo.id} geo={geo} className={styles.geoCard} />
+          {ownedGeos.map((geo, index) => (
+            <GeoCard key={index} geo={geo} className={styles.geoCard} />
           ))}
         </div>
       ) : (

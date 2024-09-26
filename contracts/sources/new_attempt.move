@@ -13,8 +13,8 @@ module my_management_addr::on_chain_geo {
         name: String,
         start_date: u64,
         end_date: u64,
-        longitude_coordinate: u128,
         latitude_coordinate: u128,
+        longitude_coordinate: u128,
         radius_miles: u128,
         radius_decimals: u128,
         mutator_ref: collection::MutatorRef,
@@ -66,10 +66,10 @@ module my_management_addr::on_chain_geo {
     
     public entry fun is_within_geo(admin: &signer, geofence: Object<GeoFence>, longitude: u128, latitude: u128, ticket_id: String) acquires GeoFence {
         let geofence_obj = borrow_global<GeoFence>(object::object_address(&geofence));
-        let radius = (geofence_obj.radius_miles as u128) + (geofence_obj.radius_decimals as u128) / pow(10, 8);
+        let radius = (geofence_obj.radius_miles as u128) / (geofence_obj.radius_decimals as u128);
         let within_geo = Self::haversine_distance(
-            geofence_obj.latitude_coordinate,
-            geofence_obj.longitude_coordinate,
+            geofence_obj.latitude_coordinate / pow(10,6),
+            geofence_obj.longitude_coordinate / pow(10,6),
             latitude,
             longitude
         ) <= radius;

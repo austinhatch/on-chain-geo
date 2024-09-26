@@ -13,7 +13,7 @@ async function getGeofences(accountAddress: AccountAddressInput) {
   const resources = await aptos.getAccountOwnedObjects({
     accountAddress,
   });
-  console.log(resources);
+  return resources;
 }
 
 async function getGeoFenceObjectDetails(objectAddr: string) {

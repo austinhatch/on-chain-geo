@@ -15,6 +15,8 @@ const GeoSelectorForm = ({
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [name, setName] = useState(prefillData?.name || null);
+  const [tokenURI, setTokenURI] = useState(prefillData?.tokenUri || null);
+
   const [unit, setUnit] = useState("miles");
 
   const [error, setError] = useState("");
@@ -25,8 +27,6 @@ const GeoSelectorForm = ({
     event.preventDefault();
 
     console.log("Submitting form...");
-    console.log("Account: ", account);
-    console.log("Wallet: ", wallet);
     const radiusInMiles = unit === "yards" ? radius / 1760 : radius;
     console.log({
       startDate,
@@ -35,23 +35,45 @@ const GeoSelectorForm = ({
       latitude,
       longitude,
     });
-    await createGeo();
     if (editMode) {
       console.log("Edit Mode");
     } else {
       console.log("Create Mode");
+      await createGeo();
     }
   };
 
   const createGeo = async () => {
+    //format data properly
+    const startDateFormatted = Math.floor(new Date(startDate).getTime() / 1000); // Convert to u64 seconds
+    const endDateFormatted = Math.floor(new Date(endDate).getTime() / 1000); // Convert to u64 seconds
+
+    //radius in miles
+    const selectedRadius = unit === "yards" ? radius / 1760 : radius;
+    const radiusFormatted = Math.round(selectedRadius * 10 ** 6); //set radius decimals
+    const radiusDecimals = 6;
+
+    //Lat and Long will always be rounded to 6 decimals and added to contract. When handling, use 6 decimals
+    const latFormatted = Math.round(coordinates.lat * 10 ** 6); //set radius decimals
+    const longFormatted = Math.round(coordinates.lng * 10 ** 6);
+    console.log({ latFormatted, longFormatted });
+
     const response = await signAndSubmitTransaction({
       sender: account.address,
       data: {
-        function: `${process.env.REACT_GEO_CONTRACT_ADDRESS}::on_chain_geo::create_geofence`,
-        functionArguments: [account.address, name],
+        function: `${process.env.REACT_APP_GEO_CONTRACT_ADDRESS}::on_chain_geo::create_geofence`,
+        functionArguments: [
+          name,
+          startDateFormatted,
+          endDateFormatted,
+          latFormatted,
+          longFormatted,
+          radiusFormatted,
+          radiusDecimals,
+          tokenURI,
+        ],
       },
     });
-    // if you want to wait for transaction
     try {
       await aptos.waitForTransaction({ transactionHash: response.hash });
     } catch (error) {
@@ -91,6 +113,18 @@ const GeoSelectorForm = ({
     setSelectedRadius(radiusInMiles);
   };
 
+  const convertToDateTimeLocalString = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className={styles.parentContainer}>
@@ -120,7 +154,7 @@ const GeoSelectorForm = ({
           Start Date:
           <input
             type="datetime-local"
-            value={startDate}
+            value={convertToDateTimeLocalString(startDate)}
             onChange={handleStartDateChange}
             required
           />
@@ -129,7 +163,7 @@ const GeoSelectorForm = ({
           End Date:
           <input
             type="datetime-local"
-            value={endDate}
+            value={convertToDateTimeLocalString(endDate)}
             onChange={handleEndDateChange}
             required
           />
@@ -156,6 +190,14 @@ const GeoSelectorForm = ({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Token URI:
+          <input
+            value={tokenURI}
+            onChange={(e) => setTokenURI(e.target.value)}
             required
           />
         </label>

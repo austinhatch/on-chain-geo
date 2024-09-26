@@ -7,10 +7,10 @@ const GeoCard = ({ geo }) => {
   const [editMode, setEditMode] = useState(false);
 
   const [selectedCoordinates, setSelectedCoordinates] = useState(
-    geo.lat && geo.long
+    geo.latitude && geo.longitude
       ? {
-          lat: geo.lat,
-          lng: geo.long,
+          lat: geo.latitude,
+          lng: geo.longitude,
         }
       : null
   );
@@ -37,23 +37,23 @@ const GeoCard = ({ geo }) => {
               <h3>{geo.name}</h3>
               {geo.startDate && (
                 <p>
-                  {geo.startDate} - {geo.endDate}
+                  {geo.startDate.toLocaleDateString()} -
+                  {geo.endDate.toLocaleDateString()}
                 </p>
               )}
               <p>Radius: {geo.radius} Miles</p>
               <p>
-                Coordinates: ({geo.lat.toFixed(6)}, {geo.long.toFixed(6)})
+                Coordinates: ({geo.latitude}, {geo.longitude})
               </p>
             </div>
             <div className={styles.checkinsContainer}>
               <h4>Check Ins</h4>
-              <p>{geo.checkins}</p>
+              {/* <p>{geo.checkins}</p> */}
             </div>
             <div className={styles.buttonContainer}>
               <button onClick={handleEditClick}>
                 {!editMode ? "Edit" : "Cancel"}
               </button>
-              <button>Delete</button>
             </div>
           </div>
           {editMode && (
