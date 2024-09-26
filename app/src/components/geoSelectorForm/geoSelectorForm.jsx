@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import styles from "./geoSelectorForm.module.scss";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { aptos } from "../../configs/aptos";
 
 const GeoSelectorForm = ({
   coordinates,
@@ -17,8 +19,14 @@ const GeoSelectorForm = ({
 
   const [error, setError] = useState("");
 
-  const handleSubmit = (event) => {
+  const { account, wallet, signAndSubmitTransaction } = useWallet();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    console.log("Submitting form...");
+    console.log("Account: ", account);
+    console.log("Wallet: ", wallet);
     const radiusInMiles = unit === "yards" ? radius / 1760 : radius;
     console.log({
       startDate,
@@ -27,10 +35,27 @@ const GeoSelectorForm = ({
       latitude,
       longitude,
     });
+    await createGeo();
     if (editMode) {
       console.log("Edit Mode");
     } else {
       console.log("Create Mode");
+    }
+  };
+
+  const createGeo = async () => {
+    const response = await signAndSubmitTransaction({
+      sender: account.address,
+      data: {
+        function: `${process.env.REACT_GEO_CONTRACT_ADDRESS}::on_chain_geo::create_geofence`,
+        functionArguments: [account.address, name],
+      },
+    });
+    // if you want to wait for transaction
+    try {
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+    } catch (error) {
+      console.error(error);
     }
   };
 
