@@ -7,16 +7,16 @@ import MyGeos from "./pages/myGeos/myGeos";
 import Header from "./components/header/header";
 
 const App = () => {
+  const [page, setPage] = useState("/");
   return (
-    <Router>
+    <>
       <div className={styles.header}>
-        <Header />
+        <Header setPage={setPage} />
       </div>
       <div className={styles.appContainer}>
-        <Route path="/" component={CreateGeos} />
-        <Route path="/my-geos" component={MyGeos} />
+        {page === "/my-geos" ? <MyGeos /> : <CreateGeos />}
       </div>
-    </Router>
+    </>
   );
 };
 

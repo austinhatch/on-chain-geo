@@ -1,21 +1,21 @@
 // App.jsx
 import React, { useState } from "react";
-import { Router, Route } from "wouter";
 import styles from "./app.module.scss";
 import CheckIn from "./pages/checkIn/checkIn";
+import MyCheckIns from "./pages/myCheckins/myCheckIns";
 import Header from "./components/header/header";
 
 const App = () => {
+  const [page, setPage] = useState("/");
   return (
-    <Router>
+    <>
       <div className={styles.header}>
-        <Header />
+        <Header setPage={setPage} />
       </div>
       <div className={styles.appContainer}>
-        <Route path="/" component={CheckIn} />
-        {/* <Route path="/my-geos" component={MyGeos} /> */}
+        {page === "/my-checkins" ? <MyCheckIns /> : <CheckIn />}
       </div>
-    </Router>
+    </>
   );
 };
 

@@ -31,11 +31,15 @@ const MyGeos = () => {
       <div className={styles.headerContainer}>
         <h1>My Geos</h1>
       </div>
-      {ownedGeos && ownedGeos.length > 0 && (
+      {ownedGeos && ownedGeos.length > 0 ? (
         <div className={styles.geosContainer}>
           {ownedGeos.map((geo) => (
             <GeoCard key={geo.id} geo={geo} className={styles.geoCard} />
           ))}
+        </div>
+      ) : (
+        <div className={styles.noGeosContainer}>
+          <h2>No Geos Found</h2>
         </div>
       )}
     </div>
