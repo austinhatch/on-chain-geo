@@ -1,10 +1,8 @@
 module my_management_addr::on_chain_geo {
     use std::string::{Self, String};
     use std::math128::{pow, sqrt};
-    use std::signer;
-    use std::error;
     use aptos_framework::object::{Self, Object};
-    use std::option::{Self, Option};
+    use std::option::{Self};
     use aptos_token_objects::collection;
     use aptos_token_objects::token;
 
@@ -42,12 +40,8 @@ module my_management_addr::on_chain_geo {
             uri,
         );
         let object_signer = object::generate_signer(&collection_constructor_ref);
-        let transfer_ref = object::generate_transfer_ref(&collection_constructor_ref);
         let mutator_ref = collection::generate_mutator_ref(&collection_constructor_ref);
-        let extend_ref = object::generate_extend_ref(&collection_constructor_ref);
         
-        object::disable_ungated_transfer(&transfer_ref);
-
         let new_geofence = GeoFence {
             name,
             start_date,
@@ -76,7 +70,7 @@ module my_management_addr::on_chain_geo {
 
         if (within_geo) {
             // Mint a token to the signer
-            let token_constructor_ref = token::create_named_token(admin, geofence_obj.name, string::utf8(EMPTY_STRING), ticket_id, option::none(), geofence_obj.uri);
+            token::create_named_token(admin, geofence_obj.name, string::utf8(EMPTY_STRING), ticket_id, option::none(), geofence_obj.uri);
         }
 
     }
