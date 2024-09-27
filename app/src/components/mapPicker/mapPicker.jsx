@@ -18,7 +18,7 @@ const defaultCenter = {
   lng: -0.09,
 };
 
-const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
+const MapPicker = ({ onCoordinateSelect, coordinates, radius, viewOnly }) => {
   console.log("Coordinates", coordinates);
   const [selectedPosition, setSelectedPosition] = useState(coordinates);
   const [center, setCenter] = useState(coordinates || defaultCenter);
@@ -48,6 +48,9 @@ const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
   }, []);
 
   const handleMapClick = useCallback((event) => {
+    if (viewOnly) {
+      return;
+    }
     const lat = event.latLng.lat();
     const lng = event.latLng.lng();
     setSelectedPosition({ lat, lng });
@@ -78,28 +81,31 @@ const MapPicker = ({ onCoordinateSelect, coordinates, radius }) => {
 
   return (
     <div className={styles.parentContainer}>
-      <Autocomplete
-        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-        onPlaceChanged={handlePlaceChanged}
-      >
-        <input
-          type="text"
-          placeholder="Search for a place"
-          style={{
-            boxSizing: `border-box`,
-            border: `1px solid transparent`,
-            width: `240px`,
-            height: `32px`,
-            padding: `0 12px`,
-            borderRadius: `3px`,
-            boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
-            fontSize: `14px`,
-            outline: `none`,
-            textOverflow: `ellipses`,
-            margin: "10px",
-          }}
-        />
-      </Autocomplete>
+      {!viewOnly && (
+        <Autocomplete
+          onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+          onPlaceChanged={handlePlaceChanged}
+        >
+          <input
+            type="text"
+            placeholder="Search for a place"
+            style={{
+              boxSizing: `border-box`,
+              border: `1px solid transparent`,
+              width: `240px`,
+              height: `32px`,
+              padding: `0 12px`,
+              borderRadius: `3px`,
+              boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
+              fontSize: `14px`,
+              outline: `none`,
+              textOverflow: `ellipses`,
+              margin: "10px",
+            }}
+          />
+        </Autocomplete>
+      )}
+
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}

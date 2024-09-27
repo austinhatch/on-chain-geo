@@ -50,14 +50,19 @@ const GeoSelectorForm = ({
 
     //radius in miles
     const selectedRadius = unit === "yards" ? radius / 1760 : radius;
-    const radiusFormatted = Math.round(selectedRadius * 10 ** 6); //set radius decimals
-    const radiusDecimals = 6;
+    const radiusFormatted = Math.round(selectedRadius * 10 ** 8); //set radius decimals
 
     //Lat and Long will always be rounded to 6 decimals and added to contract. When handling, use 6 decimals
-    const latFormatted = Math.round(coordinates.lat * 10 ** 6); //set radius decimals
-    const longFormatted = Math.round(coordinates.lng * 10 ** 6);
-    console.log({ latFormatted, longFormatted });
+    const latFormatted = Math.abs(Math.round(coordinates.lat * 10 ** 6)); //set radius decimals
+    const longFormatted = Math.abs(Math.round(coordinates.lng * 10 ** 6));
+    const latNegative = coordinates.lat < 0;
+    const longNegative = coordinates.lng < 0;
 
+    if (latFormatted < 0) {
+    }
+
+    console.log({ latFormatted, longFormatted });
+    console.log(process.env.REACT_APP_GEO_CONTRACT_ADDRESS);
     const response = await signAndSubmitTransaction({
       sender: account.address,
       data: {
@@ -66,10 +71,11 @@ const GeoSelectorForm = ({
           name,
           startDateFormatted,
           endDateFormatted,
-          latFormatted,
           longFormatted,
+          longNegative,
+          latFormatted,
+          latNegative,
           radiusFormatted,
-          radiusDecimals,
           tokenURI,
         ],
       },

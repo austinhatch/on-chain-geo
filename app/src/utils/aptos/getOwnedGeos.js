@@ -41,9 +41,13 @@ const formatGeo = (geo) => {
     name: geo.name,
     startDate: new Date(geo.start_date * 1000),
     endDate: new Date(geo.end_date * 1000),
-    radius: Number(geo.radius_miles) / 10 ** Number(geo.radius_decimals),
-    latitude: Number(geo.latitude_coordinate) / 10 ** 6,
-    longitude: Number(geo.longitude_coordinate) / 10 ** 6,
-    tokenUri: geo.base_uri,
+    radius: Number(geo.radius_miles) / 10 ** 8,
+    latitude: geo.latitude_coordinate.is_negative
+      ? (-1 * Number(geo.latitude_coordinate.value)) / 10 ** 6
+      : Number(geo.latitude_coordinate.value) / 10 ** 6,
+    longitude: geo.longitude_coordinate.is_negative
+      ? (-1 * Number(geo.longitude_coordinate.value)) / 10 ** 6
+      : Number(geo.longitude_coordinate.value) / 10 ** 6,
+    tokenUri: geo.uri,
   };
 };

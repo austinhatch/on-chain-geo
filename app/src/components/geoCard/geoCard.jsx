@@ -1,33 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./geoCard.module.scss";
-import GeoSelectorForm from "../geoSelectorForm/geoSelectorForm";
 import MapPicker from "../mapPicker/mapPicker";
 
 const GeoCard = ({ geo }) => {
-  const [editMode, setEditMode] = useState(false);
-
-  const [selectedCoordinates, setSelectedCoordinates] = useState(
-    geo.latitude && geo.longitude
-      ? {
-          lat: geo.latitude,
-          lng: geo.longitude,
-        }
-      : null
-  );
-  const [selectedRadius, setSelectedRadius] = useState(geo.radius || null);
-
-  const handleCoordinateSelect = (coordinates) => {
-    setSelectedCoordinates(coordinates);
-  };
-
-  const handleRadiusSelect = (radius) => {
-    setSelectedRadius(radius);
-  };
-
-  const handleEditClick = () => {
-    setEditMode(!editMode);
-  };
-
   return (
     <>
       {geo && (
@@ -51,30 +26,21 @@ const GeoCard = ({ geo }) => {
               {/* <p>{geo.checkins}</p> */}
             </div>
             <div className={styles.buttonContainer}>
-              <button onClick={handleEditClick}>
-                {!editMode ? "Edit" : "Cancel"}
-              </button>
+              <button>Delete</button>
             </div>
           </div>
-          {editMode && (
-            <div className={styles.editContainer}>
-              <div className={styles.mapPicker}>
-                <MapPicker
-                  onCoordinateSelect={handleCoordinateSelect}
-                  coordinates={selectedCoordinates}
-                  radius={selectedRadius}
-                />
-              </div>
-              <div className={styles.geoSelectorForm}>
-                <GeoSelectorForm
-                  coordinates={selectedCoordinates}
-                  prefillData={geo}
-                  setSelectedRadius={handleRadiusSelect}
-                  editMode={true}
-                />
-              </div>
+          <div className={styles.mapContainer}>
+            <div className={styles.mapPicker}>
+              <MapPicker
+                coordinates={{
+                  lat: geo.latitude,
+                  lng: geo.longitude,
+                }}
+                radius={geo.radius}
+                viewOnly={true}
+              />
             </div>
-          )}
+          </div>
         </div>
       )}
     </>

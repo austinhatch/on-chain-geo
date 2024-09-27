@@ -19,6 +19,8 @@ const MyGeos = () => {
         const geoFences = await getGeoFences(account.address);
         console.log(geoFences);
         setOwnedGeos(geoFences);
+      } else {
+        setOwnedGeos([]);
       }
     };
 
