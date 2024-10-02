@@ -135,7 +135,7 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
     // Differences in coordinates
     let dlat = Self::coordinate_diff(lat1, lat2);
     let dlon = Self::coordinate_diff(lon1, lon2);
-    
+
     aptos_std::debug::print(&dlat);
     aptos_std::debug::print(&dlon);
     
@@ -157,29 +157,63 @@ fun to_radians(degrees: SignedInteger): SignedInteger {
 
 // Sine function approximation using Taylor series
  fun sin(x: SignedInteger): SignedInteger {
-    let x_fixed = x % (DECIMALS * 2); // Normalize x to [0, 2]
-    let x2 = (x_fixed * x_fixed) / DECIMALS; // x^2
-    let x3 = (x_fixed * x2) / DECIMALS; // x^3
-    let x5 = (x_fixed * x3 * x2) / DECIMALS; // x^5
-    let x7 = (x_fixed * x5 * x2) / DECIMALS; // x^7
+    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative} // Normalize x to [0, 2]
+    let x2 = SignedInteger { value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false} // x^2
+    let x3 = SignedInteger {value: (x_fixed.value * x2.value) / DECIMALS, is_negative: x.is_negative}// x^3
+    let x5 = SignedInteger {value: ( x3.value * x2.value) / DECIMALS, is_negative: x.is_negative}// x^5
+    let x7 = SignedInteger {value: ( x5.value * x2.value) / DECIMALS, is_negative: x.is_negative} // x^7
 
     // Taylor series expansion: sin(x) about= x - x^3/3! + x^5/5! - x^7/7!
-    let result = x_fixed
-        - x3 / 6 // 3! = 6
-        + x5 / 120 // 5! = 120
-        - x7 / 5040; // 7! = 5040
+    let x3_term = x3 / 6 // 3! = 6
+    let x5_term = x5 / 120 // 5! = 120
+    let x7_term = x7 / 5040; // 7! = 5040   
 
-    // Clamp result to avoid negative outputs
-    return if (result > DECIMALS) { DECIMALS } else { result }
+    if(x.is_negative){
+        if((x_fixed + x5_term) == (x3_term + x7_term)){
+            return SignedInteger { value: 0, is_negative: false }
+        }
+        if((x_fixed + x5_term) > (x3_term + x7_term)){
+            return SignedInteger { value: (x_fixed + x5_term) - (x3_term - x7_term), is_negative: true }
+        }
+        else{
+            return SignedInteger { value: (x3_term + x7_term) - (x_fixed + x5_term), is_negative: false }
+        }
+    }
+    else{
+    //x is positive
+        if((x_fixed + x5_term) == (x3_term + x7_term)){
+            return SignedInteger { value: 0, is_negative: false }
+        }
+        if((x_fixed + x5_term) > (x3_term + x7_term)){
+            return SignedInteger { value: (x_fixed + x5_term) - (x3_term - x7_term), is_negative: false }
+        }
+        else{
+            return SignedInteger { value: (x3_term + x7_term) - (x_fixed + x5_term), is_negative: true }
+        }
+
+    }
 }
+
 // Cosine function approximation using Taylor series
 fun cos(x: SignedInteger): SignedInteger {
-    let x_fixed = x % (DECIMALS * 2); // Limit x to the range of 0 to 2pi
-    let x2 = (x_fixed * x_fixed) / DECIMALS; // x^2
-    let x4 = (x2 * x2) / DECIMALS; // x^4
-    let x6 = (x4 * x2) / DECIMALS; // x^6
+    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative} // Normalize x to [0, 2]
+    let x2 = SignedInteger {value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false} // x^2
+    let x4 = SignedInteger {value: (x2 * x2) / DECIMALS, is_negative: false}// x^4
+    let x6 = SignedInteger {value: (x4 * x2) / DECIMALS; is_negative: false}// x^6
     
-    return DECIMALS - x2 / 2 + x4 / 24 - x6 / 720 // Taylor series expansion
+    let x2_term = x2 / 2 // 2! = 2
+    let x4_term = x4 / 24 // 4! = 24
+    let x6_term = x6 / 720 // 6! = 720
+    
+    if((DECIMALS + x4_term) == (x2_term + x6_term)){
+        return SignedInteger { value: 0, is_negative: false }
+    }
+    if((DECIMALS + x4_term) > (x2_term + x6_term)){
+        return SignedInteger { value: (DECIMALS + x4_term) - (x2_term - x6_term), is_negative: false }
+    }
+    else{
+        return SignedInteger { value: (x2_term + x6_term) - (DECIMALS + x4_term), is_negative: true }
+    }
 }
 
 // Arctangent function approximation using Taylor series
@@ -187,16 +221,16 @@ fun atan2(y: SignedInteger, x: SignedInteger): SignedInteger {
     let pi_half: u128 = 1570796326794896619; // pi / 2
     let pi: u128 = 3141592653589793238;
     
-    if (x == 0 && y == 0) {
+    if (x.value == 0 && y.value == 0) {
         return 0 // Handle the undefined case
-    } else if (x > 0) {
-        return (y * DECIMALS) / x // First quadrant
-    } else if (x < 0 && y >= 0) {
-        return DECIMALS - (y * DECIMALS) / x // Second quadrant
-    } else if (x < 0 && y < 0) {
-        return DECIMALS + (y * DECIMALS) / x // Third quadrant
+    } else if (!x.is_negative) {
+        return (y.value * DECIMALS) / x // First quadrant
+    } else if (x.is_negative && !y.is_negative) {
+        return DECIMALS - (y.value * DECIMALS) / x.value // Second quadrant
+    } else if (x.is_negative && y.is_negative) {
+        return DECIMALS + (y.value * DECIMALS) / x.value // Third quadrant
     } else {
-        return DECIMALS * 2 - (y * DECIMALS) / x // Fourth quadrant
+        return DECIMALS * 2 - (y.value * DECIMALS) / x.value // Fourth quadrant
     }
 }
 
