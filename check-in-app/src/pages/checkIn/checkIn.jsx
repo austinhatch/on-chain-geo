@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./checkIn.module.scss";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { getGeoFences } from "../../utils/aptos/getGeos";
 
 const containerStyle = {
   width: "100%",
@@ -8,6 +10,8 @@ const containerStyle = {
 };
 
 const CheckIn = () => {
+  const { wallet, account, signAndSubmitTransaction } = useWallet();
+
   const [location, setLocation] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,16 +20,30 @@ const CheckIn = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
+  useEffect(() => {
+    const getGeos = async () => {
+      const geos = await getGeoFences();
+      console.log("geos", geos);
+    };
+    getGeos();
+  }, []);
+
   const handleGetLocation = () => {
+    console.log("account", account);
+    if (!account) {
+      setError("Please connect your wallet to check in");
+      return;
+    }
     if (navigator.geolocation) {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log("position", position);
-          setLocation({
+          const coordinates = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          });
+          };
+          console.log("coordinates", coordinates);
+          setLocation(coordinates);
           setError("");
         },
         (error) => {

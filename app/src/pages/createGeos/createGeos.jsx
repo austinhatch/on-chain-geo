@@ -8,7 +8,6 @@ const CreateGeos = () => {
   const [selectedRadius, setSelectedRadius] = useState(null);
 
   const handleCoordinateSelect = (coordinates) => {
-    console.log(coordinates);
     setSelectedCoordinates(coordinates);
   };
 

@@ -25,9 +25,6 @@ const GeoCard = ({ geo }) => {
               <h4>Check Ins</h4>
               {/* <p>{geo.checkins}</p> */}
             </div>
-            <div className={styles.buttonContainer}>
-              <button>Delete</button>
-            </div>
           </div>
           <div className={styles.mapContainer}>
             <div className={styles.mapPicker}>

@@ -19,8 +19,7 @@ const defaultCenter = {
 };
 
 const MapPicker = ({ onCoordinateSelect, coordinates, radius, viewOnly }) => {
-  console.log("Coordinates", coordinates);
-  const [selectedPosition, setSelectedPosition] = useState(coordinates);
+  const [selectedPosition, setSelectedPosition] = useState(coordinates || null);
   const [center, setCenter] = useState(coordinates || defaultCenter);
   const autocompleteRef = useRef(null);
 
@@ -44,6 +43,13 @@ const MapPicker = ({ onCoordinateSelect, coordinates, radius, viewOnly }) => {
     };
     if (!coordinates) {
       fetchLocation();
+    } else {
+      console.log("Coordinates already set:", coordinates);
+      setCenter(coordinates);
+      setSelectedPosition(coordinates);
+      if (onCoordinateSelect) {
+        onCoordinateSelect(coordinates);
+      }
     }
   }, []);
 
