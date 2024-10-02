@@ -139,13 +139,11 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
     aptos_std::debug::print(&dlat);
     aptos_std::debug::print(&dlon);
     
-    let a = pow(sin(dlat / 2), 2) +
-            cos(lat1_rad) * cos(lat2_rad) * pow(sin(dlon / 2), 2);
+    let a = Self::calc_a(lat1_rad, lat2_rad, dlon);
     
-    let a = std::math128::min(a, DECIMALS * DECIMALS); // Ensure 'a' does not exceed DECIMALS * DECIMALS
-    let c = 2 * atan2(sqrt(a), sqrt(DECIMALS * DECIMALS - a));
+    let c = Self::calc_c(a)
     
-    return radius_of_earth * c // Distance in meters
+    return radius_of_earth * c.value // Distance in meters
 }
 
 // Convert degrees to radians
@@ -153,6 +151,54 @@ fun to_radians(degrees: SignedInteger): SignedInteger {
     let pi: u128 = 314159265;// Approximation of pi (fixed-point with 8 decimals)
     let radians: u128 = degrees.value * pi / 180000000 // Convert degrees to radians using 18 decimals
     return SignedInteger { value: radians, is_negative: degrees.is_negative }
+}
+
+fun calc_a(lat1_rad: SignedInteger, lat2_rad: SignedInteger, dlon: SignedInteger): SignedInteger {
+    //  a = pow(sin(dlat / 2), 2) + cos(lat1_rad) * cos(lat2_rad) * pow(sin(dlon / 2), 2);
+
+    let sin_dlat_term = sin(SignedInteger { value: dlat.value/2, is_negative: dlat.is_negative });
+    let sin_dlon_term = sin(SignedInteger { value: dlon.value/2, is_negative: dlon.is_negative });
+    let cos_lat1 = cos(lat1_rad);
+    let cos_lat2 = cos(lat2_rad);
+    
+    let second_term;
+    let second_term_val = cos_lat1.value * cos_lat2.value * pow(sin_dlon_term.value, 2)
+    if(cos_lat1.is_negative == cos_lat2.is_negative){
+        second_term = SignedInteger {value: second_term_val, is_negative: false};
+    }
+    else{
+        second_term = SignedInteger {value: second_term_val is_negative: true};
+    }
+
+    if(sin_dlat_term.is_negative){
+        if(second_term.is_negative){
+            return SignedInteger { value: sin_dlat_term.value + second_term.value, is_negative: true }
+        }
+        else{
+            return SignedInteger { value: second_term.value - sin_dlat_term.value, is_negative: false }
+        }
+    }
+    else{
+        if(second_term.is_negative){
+            return SignedInteger { value: sin_dlat_term.value - second_term.value, is_negative: false }
+        }
+        else{
+            return SignedInteger { value: sin_dlat_term.value + second_term.value, is_negative: false }
+        }
+    }
+}
+
+fun calc_c(a: SignedInteger): SignedInteger {
+    // c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    let sqrt_a = sqrt(a.value);
+    let sqrt_1_minus_a = sqrt(DECIMALS - a.value);
+
+    let sqrt_a_term = SignedInteger { value: sqrt_a, is_negative: false };
+    let sqrt_1_minus_a_term = SignedInteger { value: sqrt_1_minus_a, is_negative: false };
+
+    let atan2_term = atan2(sqrt_a_term, sqrt_1_minus_a_term);
+
+    return SignedInteger { value: 2 * atan2_term.value, is_negative: atan2_term.is_negative }
 }
 
 // Sine function approximation using Taylor series
