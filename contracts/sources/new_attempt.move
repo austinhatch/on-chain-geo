@@ -18,6 +18,11 @@ module my_management_addr::on_chain_geo_v1 {
         longitude_is_negative: bool 
     }
 
+    struct SignedInteger has store, copy, drop {
+        value: u128,
+        is_negative: bool
+    }
+
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
     struct GeoFence has key {
         name: String,
@@ -104,27 +109,38 @@ module my_management_addr::on_chain_geo_v1 {
         }
     }
 
-const   MIDDLE_POINT_LON: u128 = 18000000000;
-const   MIDDLE_POINT_LAT: u128 = 9000000000;
+const   LON_OFFSET: u128 = 18000000000;
+const   LAT_OFFSET: u128 = 9000000000;
 // Haversine formula to calculate the distance between two points on the Earth's surface
 fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
     let radius_of_earth: u128 = 6371000; // Radius of the Earth in meters
 
     // Convert coordinates to u128
-    let lat1 = Self::coordinate_to_u128_latitude(coord1.latitude, coord1.latitude_is_negative);
-    let lon1 = Self::coordinate_to_u128_longitude(coord1.longitude, coord1.longitude_is_negative);
+    let lat1 = Self::coordinate_to_signed_integer(coord1.latitude, coord1.latitude_is_negative);
+    let lon1 = Self::coordinate_to_signed_integer(coord1.longitude, coord1.longitude_is_negative);
 
-    let lat2 = Self::coordinate_to_u128_latitude(coord2.latitude, coord2.latitude_is_negative);
-    let lon2 = Self::coordinate_to_u128_longitude(coord2.longitude, coord2.longitude_is_negative);
+    let lat2 = Self::coordinate_to_signed_integer(coord2.latitude, coord2.latitude_is_negative);
+    let lon2 = Self::coordinate_to_signed_integer(coord2.longitude, coord2.longitude_is_negative);
 
-    // Use coordinate_diff to avoid overflow
-    let dlat = Self::to_radians(Self::coordinate_diff(lat2, lat1));
+    let lat1_rad = to_radians(lat1);
+    let lon1_rad = to_radians(lon1);
+    let lat2_rad = to_radians(lat2);
+    let lon2_rad = to_radians(lon2);
+
+    aptos_std::debug::print(&lat1_rad);
+    aptos_std::debug::print(&lon1_rad);
+    aptos_std::debug::print(&lat2_rad);
+    aptos_std::debug::print(&lon2_rad);
+
+    // Differences in coordinates
+    let dlat = Self::coordinate_diff(lat1, lat2);
+    let dlon = Self::coordinate_diff(lon1, lon2);
+    
     aptos_std::debug::print(&dlat);
-    let dlon = Self::to_radians(Self::coordinate_diff(lon2, lon1));
     aptos_std::debug::print(&dlon);
     
     let a = pow(sin(dlat / 2), 2) +
-            cos(Self::to_radians(lat1)) * cos(Self::to_radians(lat2)) * pow(sin(dlon / 2), 2);
+            cos(lat1_rad) * cos(lat2_rad) * pow(sin(dlon / 2), 2);
     
     let a = std::math128::min(a, DECIMALS * DECIMALS); // Ensure 'a' does not exceed DECIMALS * DECIMALS
     let c = 2 * atan2(sqrt(a), sqrt(DECIMALS * DECIMALS - a));
@@ -133,13 +149,14 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
 }
 
 // Convert degrees to radians
-fun to_radians(degrees: u128): u128 {
-    let pi: u128 = 314159265; // Approximation of pi (fixed-point with 8 decimals)
-    return degrees * pi / 180000000 // Convert degrees to radians
+fun to_radians(degrees: SignedInteger): SignedInteger {
+    let pi: u128 = 314159265;// Approximation of pi (fixed-point with 8 decimals)
+    let radians: u128 = degrees.value * pi / 180000000 // Convert degrees to radians using 18 decimals
+    return SignedInteger { value: radians, is_negative: degrees.is_negative }
 }
 
 // Sine function approximation using Taylor series
- fun sin(x: u128): u128 {
+ fun sin(x: SignedInteger): SignedInteger {
     let x_fixed = x % (DECIMALS * 2); // Normalize x to [0, 2]
     let x2 = (x_fixed * x_fixed) / DECIMALS; // x^2
     let x3 = (x_fixed * x2) / DECIMALS; // x^3
@@ -153,10 +170,10 @@ fun to_radians(degrees: u128): u128 {
         - x7 / 5040; // 7! = 5040
 
     // Clamp result to avoid negative outputs
-    return if result > DECIMALS { DECIMALS } else { result }
+    return if (result > DECIMALS) { DECIMALS } else { result }
 }
 // Cosine function approximation using Taylor series
-fun cos(x: u128): u128 {
+fun cos(x: SignedInteger): SignedInteger {
     let x_fixed = x % (DECIMALS * 2); // Limit x to the range of 0 to 2pi
     let x2 = (x_fixed * x_fixed) / DECIMALS; // x^2
     let x4 = (x2 * x2) / DECIMALS; // x^4
@@ -166,7 +183,10 @@ fun cos(x: u128): u128 {
 }
 
 // Arctangent function approximation using Taylor series
-fun atan2(y: u128, x: u128): u128 {
+fun atan2(y: SignedInteger, x: SignedInteger): SignedInteger {
+    let pi_half: u128 = 1570796326794896619; // pi / 2
+    let pi: u128 = 3141592653589793238;
+    
     if (x == 0 && y == 0) {
         return 0 // Handle the undefined case
     } else if (x > 0) {
@@ -181,29 +201,47 @@ fun atan2(y: u128, x: u128): u128 {
 }
 
 // Helper function to calculate the difference between two coordinates
-fun coordinate_diff(coord1: u128, coord2: u128): u128 {
-    return if (coord1 > coord2) {
-        coord1 - coord2
-    } else {
-        coord2 - coord1
+fun coordinate_diff(coord1: SignedInteger, coord2: SignedInteger): SignedInteger {
+    // If both coordinates are negative
+    if(coord1.is_negative && coord2.is_negative) {
+        if(coord1.value > coord2.value){
+            return SignedInteger { value: coord1.value + coord2.value, is_negative: true }
+        } else {
+            return SignedInteger { value: coord2.value - coord1.value, is_negative: false }
+        }
+    }
+
+    //If both coordinates are positive
+    if(!coord1.is_negative && !coord2.is_negative) {
+        if(coord1.value > coord2.value){
+            return SignedInteger { value: coord1.value - coord2.value, is_negative: false }
+        } else {
+            return SignedInteger { value: coord1.value - coord2.value, is_negative: true }
+        }
+    }
+
+    //If coord1 is negative and coord2 is positive
+    if(coord1.is_negative && !coord2.is_negative) {
+        return SignedInteger { value: coord1.value + coord2.value, is_negative: true }
+    }
+
+    //If coord1 is positive and coord2 is negative
+    if(!coord1.is_negative && coord2.is_negative) {
+        return SignedInteger { value: coord2.value - coord1.value, is_negative: true }
     }
 }
 
 // Helper function to convert a Coordinate to u128
-fun coordinate_to_u128_latitude(direction: u128, is_negative: bool): u128 {
-    return if (is_negative) {
-        MIDDLE_POINT_LAT + direction
-    } else {
-        direction
-    }
-}
+// fun coordinate_to_u128_latitude(direction: u128, is_negative: bool): SignedInteger {
+//     return SignedInteger { value: direction, is_negative }
+// }
 
-fun coordinate_to_u128_longitude(direction: u128, is_negative: bool): u128 {
-    return if (is_negative) {
-        MIDDLE_POINT_LON + direction
-    } else {
-        direction
-    }
+// fun coordinate_to_u128_longitude(direction: u128, is_negative: bool): SignedInteger {
+//     return SignedInteger { value: direction, is_negative }
+// }
+
+fun coordinate_to_signed_integer(direction: u128, is_negative: bool): SignedInteger {
+    return SignedInteger { value: direction, is_negative }
 }
 
     #[test]
@@ -225,6 +263,7 @@ fun coordinate_to_u128_longitude(direction: u128, is_negative: bool): u128 {
         };
 
         let distance = haversine_distance(coord1, coord2);
+
 
         // Print the distance for verification
         aptos_std::debug::print(&distance);
