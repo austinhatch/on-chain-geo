@@ -141,7 +141,7 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
     
     let a = Self::calc_a(lat1_rad, lat2_rad, dlon);
     
-    let c = Self::calc_c(a)
+    let c = Self::calc_c(a);
     
     return radius_of_earth * c.value // Distance in meters
 }
@@ -149,7 +149,7 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
 // Convert degrees to radians
 fun to_radians(degrees: SignedInteger): SignedInteger {
     let pi: u128 = 314159265;// Approximation of pi (fixed-point with 8 decimals)
-    let radians: u128 = degrees.value * pi / 180000000 // Convert degrees to radians using 18 decimals
+    let radians: u128 = degrees.value * pi / 180000000;// Convert degrees to radians using 18 decimals
     return SignedInteger { value: radians, is_negative: degrees.is_negative }
 }
 
@@ -162,13 +162,13 @@ fun calc_a(lat1_rad: SignedInteger, lat2_rad: SignedInteger, dlon: SignedInteger
     let cos_lat2 = cos(lat2_rad);
     
     let second_term;
-    let second_term_val = cos_lat1.value * cos_lat2.value * pow(sin_dlon_term.value, 2)
+    let second_term_val = cos_lat1.value * cos_lat2.value * pow(sin_dlon_term.value, 2);
     if(cos_lat1.is_negative == cos_lat2.is_negative){
         second_term = SignedInteger {value: second_term_val, is_negative: false};
     }
     else{
-        second_term = SignedInteger {value: second_term_val is_negative: true};
-    }
+        second_term = SignedInteger {value: second_term_val, is_negative: true};
+    };
 
     if(sin_dlat_term.is_negative){
         if(second_term.is_negative){
@@ -203,26 +203,26 @@ fun calc_c(a: SignedInteger): SignedInteger {
 
 // Sine function approximation using Taylor series
  fun sin(x: SignedInteger): SignedInteger {
-    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative} // Normalize x to [0, 2]
-    let x2 = SignedInteger { value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false} // x^2
-    let x3 = SignedInteger {value: (x_fixed.value * x2.value) / DECIMALS, is_negative: x.is_negative}// x^3
-    let x5 = SignedInteger {value: ( x3.value * x2.value) / DECIMALS, is_negative: x.is_negative}// x^5
-    let x7 = SignedInteger {value: ( x5.value * x2.value) / DECIMALS, is_negative: x.is_negative} // x^7
+    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative}; // Normalize x to [0, 2]
+    let x2 = SignedInteger { value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false};// x^2
+    let x3 = SignedInteger {value: (x_fixed.value * x2.value) / DECIMALS, is_negative: x.is_negative};// x^3
+    let x5 = SignedInteger {value: ( x3.value * x2.value) / DECIMALS, is_negative: x.is_negative};// x^5
+    let x7 = SignedInteger {value: ( x5.value * x2.value) / DECIMALS, is_negative: x.is_negative}; // x^7
 
     // Taylor series expansion: sin(x) about= x - x^3/3! + x^5/5! - x^7/7!
-    let x3_term = x3 / 6 // 3! = 6
-    let x5_term = x5 / 120 // 5! = 120
+    let x3_term = x3 / 6; // 3! = 6
+    let x5_term = x5 / 120; // 5! = 120
     let x7_term = x7 / 5040; // 7! = 5040   
 
     if(x.is_negative){
         if((x_fixed + x5_term) == (x3_term + x7_term)){
-            return SignedInteger { value: 0, is_negative: false }
+            return SignedInteger { value: 0, is_negative: false };
         }
-        if((x_fixed + x5_term) > (x3_term + x7_term)){
-            return SignedInteger { value: (x_fixed + x5_term) - (x3_term - x7_term), is_negative: true }
+        else if((x_fixed + x5_term) > (x3_term + x7_term)){
+            return SignedInteger { value: (x_fixed + x5_term) - (x3_term - x7_term), is_negative: true };
         }
         else{
-            return SignedInteger { value: (x3_term + x7_term) - (x_fixed + x5_term), is_negative: false }
+            return SignedInteger { value: (x3_term + x7_term) - (x_fixed + x5_term), is_negative: false };
         }
     }
     else{
@@ -230,7 +230,7 @@ fun calc_c(a: SignedInteger): SignedInteger {
         if((x_fixed + x5_term) == (x3_term + x7_term)){
             return SignedInteger { value: 0, is_negative: false }
         }
-        if((x_fixed + x5_term) > (x3_term + x7_term)){
+        else if((x_fixed + x5_term) > (x3_term + x7_term)){
             return SignedInteger { value: (x_fixed + x5_term) - (x3_term - x7_term), is_negative: false }
         }
         else{
@@ -242,19 +242,19 @@ fun calc_c(a: SignedInteger): SignedInteger {
 
 // Cosine function approximation using Taylor series
 fun cos(x: SignedInteger): SignedInteger {
-    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative} // Normalize x to [0, 2]
-    let x2 = SignedInteger {value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false} // x^2
-    let x4 = SignedInteger {value: (x2 * x2) / DECIMALS, is_negative: false}// x^4
-    let x6 = SignedInteger {value: (x4 * x2) / DECIMALS; is_negative: false}// x^6
+    let x_fixed = SignedInteger { value : x.value % (DECIMALS * 2), is_negative: x.is_negative}; // Normalize x to [0, 2]
+    let x2 = SignedInteger {value: (x_fixed.value * x_fixed.value) / DECIMALS, is_negative: false}; // x^2
+    let x4 = SignedInteger {value: (x2 * x2) / DECIMALS, is_negative: false}; // x^4
+    let x6 = SignedInteger {value: (x4 * x2) / DECIMALS, is_negative: false}; // x^6
     
-    let x2_term = x2 / 2 // 2! = 2
-    let x4_term = x4 / 24 // 4! = 24
-    let x6_term = x6 / 720 // 6! = 720
+    let x2_term = x2 / 2; // 2! = 2
+    let x4_term = x4 / 24; // 4! = 24
+    let x6_term = x6 / 720; // 6! = 720
     
     if((DECIMALS + x4_term) == (x2_term + x6_term)){
         return SignedInteger { value: 0, is_negative: false }
     }
-    if((DECIMALS + x4_term) > (x2_term + x6_term)){
+    else if((DECIMALS + x4_term) > (x2_term + x6_term)){
         return SignedInteger { value: (DECIMALS + x4_term) - (x2_term - x6_term), is_negative: false }
     }
     else{
@@ -289,7 +289,7 @@ fun coordinate_diff(coord1: SignedInteger, coord2: SignedInteger): SignedInteger
         } else {
             return SignedInteger { value: coord2.value - coord1.value, is_negative: false }
         }
-    }
+    };
 
     //If both coordinates are positive
     if(!coord1.is_negative && !coord2.is_negative) {
@@ -298,12 +298,12 @@ fun coordinate_diff(coord1: SignedInteger, coord2: SignedInteger): SignedInteger
         } else {
             return SignedInteger { value: coord1.value - coord2.value, is_negative: true }
         }
-    }
+    };
 
     //If coord1 is negative and coord2 is positive
     if(coord1.is_negative && !coord2.is_negative) {
         return SignedInteger { value: coord1.value + coord2.value, is_negative: true }
-    }
+    };
 
     //If coord1 is positive and coord2 is negative
     if(!coord1.is_negative && coord2.is_negative) {
