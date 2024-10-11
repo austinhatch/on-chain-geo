@@ -23,3 +23,11 @@ export const getGeoFences = async () => {
   });
   console.log(events);
 };
+
+export const getGeoFence = async (address) => {
+  const object = await aptos.getObjectDataByObjectAddress({
+    objectAddress: address,
+  });
+  console.log(object);
+  return object;
+}
