@@ -128,11 +128,6 @@ fun haversine_distance(coord1: GeoCoordinate, coord2: GeoCoordinate): u128 {
     let lat2_rad = to_radians(lat2);
     let lon2_rad = to_radians(lon2);
 
-    // aptos_std::debug::print(&lat1_rad);
-    // aptos_std::debug::print(&lon1_rad);
-    // aptos_std::debug::print(&lat2_rad);
-    // aptos_std::debug::print(&lon2_rad);
-
     // Differences in coordinates
     let dlat = Self::coordinate_diff(lat2_rad, lat1_rad);
     let dlon = Self::coordinate_diff(lon2_rad, lon1_rad);
@@ -174,36 +169,43 @@ fun calc_a(lat1_rad: SignedInteger, lat2_rad: SignedInteger, dlat: SignedInteger
     let cos_lat2 = cos(lat2_rad);
         aptos_std::debug::print(&cos_lat2);
 
-    
-    let second_term;
-    let second_term_val = cos_lat1.value * cos_lat2.value * pow(sin_dlon_term.value, 2);
-    if(cos_lat1.is_negative == cos_lat2.is_negative){
-        second_term = SignedInteger {value: second_term_val, is_negative: false};
-    }
-    else{
-        second_term = SignedInteger {value: second_term_val, is_negative: true};
-    };
+    let first_term = square_with_decs(sin_dlat_term);
 
-    if(sin_dlat_term.is_negative){
+    let second_term = multiply_with_decs(multiply_with_decs(cos_lat1, cos_lat2), square_with_decs(sin_dlon_term));
+
+    if(first_term.is_negative){
         if(second_term.is_negative){
-            return SignedInteger { value: sin_dlat_term.value + second_term.value, is_negative: true }
+            return SignedInteger { value: first_term.value + second_term.value, is_negative: true }
         }
         else{
-            return SignedInteger { value: second_term.value - sin_dlat_term.value, is_negative: false }
+            return SignedInteger { value: second_term.value - first_term.value, is_negative: false }
         }
     }
     else{
         if(second_term.is_negative){
-            return SignedInteger { value: sin_dlat_term.value - second_term.value, is_negative: false }
+            return SignedInteger { value: first_term.value - second_term.value, is_negative: false }
         }
         else{
-            return SignedInteger { value: sin_dlat_term.value + second_term.value, is_negative: false }
+            return SignedInteger { value: first_term.value + second_term.value, is_negative: false }
         }
     }
 }
 
+//Function for preserving 8 decimal places when using square
+fun square_with_decs(x: SignedInteger): SignedInteger {
+    let result = pow(x.value, 2)/DECIMALS;
+    return SignedInteger { value: result, is_negative: false }
+}
+
+//Multiply 2 numbers and preserve 8 decimal places
+fun multiply_with_decs(x: SignedInteger, y: SignedInteger): SignedInteger {
+    let result = (x.value * y.value) / DECIMALS;
+    return SignedInteger { value: result, is_negative: x.is_negative != y.is_negative }
+}
+
 fun calc_c(a: SignedInteger): SignedInteger {
     // c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    aptos_std::debug::print(&a);
     let sqrt_a = sqrt(a.value);
     let sqrt_1_minus_a = sqrt(DECIMALS - a.value);
 
