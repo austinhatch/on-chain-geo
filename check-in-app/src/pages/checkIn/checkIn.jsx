@@ -39,7 +39,7 @@ const CheckIn = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
-  const handleCheckLocation = (e) => {
+  const handleCheckLocation = async (e) => {
     e.preventDefault();
     //Get user's current location
     console.log("account", account);
@@ -47,41 +47,44 @@ const CheckIn = () => {
       setError("Please connect your wallet to check in");
       return;
     }
+
     if (navigator.geolocation) {
       setLoading(true);
+      let my_coords = null;
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const coordinates = {
+          my_coords = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          console.log("coordinates", coordinates);
-          setLocation(coordinates);
+          console.log("coordinates", my_coords);
+          setLocation(my_coords);
           setError("");
         },
         (error) => {
           setError("Unable to retrieve your location");
         }
       );
+
+      //Get geo fence location
+      const geo = await getGeoFence(checkInAddress);
+      if (geo) {
+        const geo_coords = { lat: geo.latitude, lng: geo.longitude };
+        console.log("geo_coords", geo_coords);
+        setGeoLocation(geo_coords);
+        const distance = getDistance(my_coords, geo_coords);
+        console.log("distance", distance);
+        if (distance <= geo.radius) {
+          console.log("Check In Successful");
+        } else {
+          setError("You are not within the check in radius");
+        }
+      } else {
+        setError("Invalid Check In Address");
+      }
     } else {
       setError("Geolocation is not supported by this browser");
     }
-
-    //Get geo fence location
-    const geo = getGeoFence(checkInAddress);
-    if (geo) {
-      setGeoLocation(geo.coordinates);
-      const distance = getDistance(location, geo.coordinates);
-      console.log("distance", distance);
-      if (distance <= geo.radius) {
-        console.log("Check In Successful");
-      } else {
-        setError("You are not within the check in radius");
-      }
-    } else {
-      setError("Invalid Check In Address");
-    }
-
     setLoading(false);
   };
 
@@ -143,8 +146,8 @@ const CheckIn = () => {
                   <Marker position={geoLocation} icon={customIcon2} />
                   <Circle
                     center={{
-                      lat: geoLocation.latitude,
-                      lng: geoLocation.longitude,
+                      lat: geoLocation.lat,
+                      lng: geoLocation.lng,
                     }}
                     radius={radius} // Radius in meters
                     options={{

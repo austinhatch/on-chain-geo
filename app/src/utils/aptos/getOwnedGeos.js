@@ -16,7 +16,9 @@ export const getGeoFences = async (accountAddress) => {
         const formattedGeo = formatGeo(geo);
         geoFences.push(formattedGeo);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   }
   console.log(geoFences);
   return geoFences;
@@ -29,6 +31,7 @@ export async function getGeoFenceObjectDetails(objectAddr) {
       accountAddress: objectAddr,
       resourceType: resourceType,
     });
+    console.log(resource);
     return resource;
   } catch (e) {}
 }
@@ -42,12 +45,12 @@ const formatGeo = (geo) => {
     startDate: new Date(geo.start_date * 1000),
     endDate: new Date(geo.end_date * 1000),
     radius: Number(geo.radius_miles) / 10 ** 8,
-    latitude: geo.latitude_coordinate.is_negative
-      ? (-1 * Number(geo.latitude_coordinate.value)) / 10 ** 6
-      : Number(geo.latitude_coordinate.value) / 10 ** 6,
-    longitude: geo.longitude_coordinate.is_negative
-      ? (-1 * Number(geo.longitude_coordinate.value)) / 10 ** 6
-      : Number(geo.longitude_coordinate.value) / 10 ** 6,
+    latitude: geo.geo_coordinate.latitude_is_negative
+      ? (-1 * Number(geo.geo_coordinate.latitude)) / 10 ** 6
+      : Number(geo.geo_coordinate.latitude) / 10 ** 6,
+    longitude: geo.geo_coordinate.longitude_is_negative
+      ? (-1 * Number(geo.geo_coordinate.longitude)) / 10 ** 6
+      : Number(geo.geo_coordinate.longitude) / 10 ** 6,
     tokenUri: geo.uri,
   };
 };

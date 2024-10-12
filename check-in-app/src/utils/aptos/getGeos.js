@@ -6,10 +6,10 @@ export const getGeoFence = async (address) => {
   const object = await aptos.getObjectDataByObjectAddress({
     objectAddress: address,
   });
-  console.log(object);
   const details = await getGeoFenceObjectDetails(object.object_address);
-  console.log(details);
-  return object;
+  const geo = formatGeo(details);
+  console.log(geo);
+  return geo;
 };
 
 export async function getGeoFenceObjectDetails(objectAddr) {
@@ -22,3 +22,19 @@ export async function getGeoFenceObjectDetails(objectAddr) {
     return resource;
   } catch (e) {}
 }
+
+const formatGeo = (geo) => {
+  return {
+    name: geo.name,
+    startDate: new Date(geo.start_date * 1000),
+    endDate: new Date(geo.end_date * 1000),
+    radius: Number(geo.radius_miles) / 10 ** 8,
+    latitude: geo.geo_coordinate.latitude_is_negative
+      ? (-1 * Number(geo.geo_coordinate.latitude)) / 10 ** 6
+      : Number(geo.geo_coordinate.latitude) / 10 ** 6,
+    longitude: geo.geo_coordinate.longitude_is_negative
+      ? (-1 * Number(geo.geo_coordinate.longitude)) / 10 ** 6
+      : Number(geo.geo_coordinate.longitude) / 10 ** 6,
+    tokenUri: geo.uri,
+  };
+};
