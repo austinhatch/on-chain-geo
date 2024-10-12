@@ -22,7 +22,7 @@ async function getGeoFenceObjectDetails(objectAddr: string) {
   });
   const aptos = new Aptos(aptosConfig);
   const resourceType: `${string}::${string}::${string}` =
-    "0x4085614bac67f35aaa8843566633d3b05e182e53af02bad646e42cf734e68afd::on_chain_geo::GeoFence";
+    "0x4085614bac67f35aaa8843566633d3b05e182e53af02bad646e42cf734e68afd::on_chain_geo_v1::GeoFence";
   const resource = await aptos.getAccountResource({
     accountAddress: objectAddr,
     resourceType: resourceType,

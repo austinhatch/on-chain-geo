@@ -23,7 +23,7 @@ export const getGeoFences = async (accountAddress) => {
 };
 
 export async function getGeoFenceObjectDetails(objectAddr) {
-  const resourceType = `${process.env.REACT_APP_GEO_CONTRACT_ADDRESS}::on_chain_geo::GeoFence`;
+  const resourceType = `${process.env.REACT_APP_GEO_CONTRACT_ADDRESS}::on_chain_geo_v1::GeoFence`;
   try {
     const resource = await aptos.getAccountResource({
       accountAddress: objectAddr,

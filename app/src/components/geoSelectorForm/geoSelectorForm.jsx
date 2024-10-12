@@ -66,7 +66,7 @@ const GeoSelectorForm = ({
     const response = await signAndSubmitTransaction({
       sender: account.address,
       data: {
-        function: `${process.env.REACT_APP_GEO_CONTRACT_ADDRESS}::on_chain_geo::create_geofence`,
+        function: `${process.env.REACT_APP_GEO_CONTRACT_ADDRESS}::on_chain_geo_v1::create_geofence`,
         functionArguments: [
           name,
           startDateFormatted,

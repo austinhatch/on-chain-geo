@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import styles from "./checkIn.module.scss";
-import { GoogleMap, useJsApiLoader, Marker, Circle } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  Circle,
+} from "@react-google-maps/api";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { getGeoFences } from "../../utils/aptos/getGeos";
+import { getGeoFence } from "../../utils/aptos/getGeos";
 import { getDistance } from "geolib"; // Import the getDistance function from geolib
 
 const containerStyle = {
@@ -30,20 +35,12 @@ const CheckIn = () => {
   const [loading, setLoading] = useState(false);
   const [checkInAddress, setCheckInAddress] = useState("");
 
-
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
-  useEffect(() => {
-    const getGeos = async () => {
-      const geos = await getGeoFences();
-      console.log("geos", geos);
-    };
-    getGeos();
-  }, []);
-
-  const handleCheckLocation = () => {
+  const handleCheckLocation = (e) => {
+    e.preventDefault();
     //Get user's current location
     console.log("account", account);
     if (!account) {
@@ -81,8 +78,7 @@ const CheckIn = () => {
       } else {
         setError("You are not within the check in radius");
       }
-    }
-    else {
+    } else {
       setError("Invalid Check In Address");
     }
 
@@ -97,8 +93,8 @@ const CheckIn = () => {
     <div className={styles.parentContainer}>
       <div className={styles.headerContainer}>
         <p className={styles.instructionsText}>
-          Enter the unique Check In address and Click on Check In below to see a list of available check in rewards
-          for your current location!
+          Enter the unique Check In address and Click on Check In below to see a
+          list of available check in rewards for your current location!
         </p>
       </div>
       <form onSubmit={handleCheckLocation} className={styles.formContainer}>
@@ -110,11 +106,13 @@ const CheckIn = () => {
             value={checkInAddress}
             onChange={(e) => setCheckInAddress(e.target.value)}
             style={{
-              width: '100%', /* Make the input take the full width of its container */
-              height: '50px', /* Increase the height */
-              padding: '10px', /* Add padding for better spacing */
-              fontSize: '16px', /* Increase the font size */
-              boxSizing: 'border-box' /* Ensure padding and border are included in the width and height */
+              width:
+                "100%" /* Make the input take the full width of its container */,
+              height: "50px" /* Increase the height */,
+              padding: "10px" /* Add padding for better spacing */,
+              fontSize: "16px" /* Increase the font size */,
+              boxSizing:
+                "border-box" /* Ensure padding and border are included in the width and height */,
             }}
             required
           />
@@ -140,21 +138,23 @@ const CheckIn = () => {
                   <Marker position={location} icon={customIcon1} />
                 </>
               )}
-              {
-                geoLocation && (
-                  <>
-                    <Marker position={geoLocation} icon={customIcon2} />
-                    <Circle
-                      center={{ lat: geoLocation.latitude, lng: geoLocation.longitude }}
-                      radius={radius} // Radius in meters
-                      options={{
-                        fillColor: "rgba(0, 0, 255, 0.2)",
-                        strokeColor: "rgba(0, 0, 255, 0.5)",
-                        strokeWeight: 2,
-                      }} />
-                  </>
-                )
-              }
+              {geoLocation && (
+                <>
+                  <Marker position={geoLocation} icon={customIcon2} />
+                  <Circle
+                    center={{
+                      lat: geoLocation.latitude,
+                      lng: geoLocation.longitude,
+                    }}
+                    radius={radius} // Radius in meters
+                    options={{
+                      fillColor: "rgba(0, 0, 255, 0.2)",
+                      strokeColor: "rgba(0, 0, 255, 0.5)",
+                      strokeWeight: 2,
+                    }}
+                  />
+                </>
+              )}
             </GoogleMap>
           </div>
         </div>
