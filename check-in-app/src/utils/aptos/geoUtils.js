@@ -20,7 +20,23 @@ export async function getGeoFenceObjectDetails(objectAddr) {
       resourceType: resourceType,
     });
     return resource;
-  } catch (e) {}
+  } catch (e) { }
+}
+
+export async function getOwnedCheckins(address) {
+  //get account owned tokens
+  const tokens = await aptos.getAccountOwnedTokens({
+    accountAddress: address,
+  });
+  console.log(tokens);
+  let checkIns = [];
+  //Find the tokens that are check ins
+  for (const token of tokens) {
+    if (token.collection_id === process.env.REACT_APP_CHECKIN_COLLECTION) {
+      checkIns.push(token);
+    }
+  }
+  return checkIns;
 }
 
 const formatGeo = (geo) => {

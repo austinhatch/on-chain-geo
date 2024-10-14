@@ -9,7 +9,7 @@ const account = new AptosAccount(privateKey);
 
 // Create the Aptos configuration with the network and account
 const aptosConfig = new AptosConfig({
-  network: Network.DEVNET,
+  network: Network.TESTNET,
   account: account,
 });
 

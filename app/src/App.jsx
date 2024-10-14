@@ -6,6 +6,7 @@ import CreateGeos from "./pages/createGeos/createGeos";
 import MyGeos from "./pages/myGeos/myGeos";
 import Header from "./components/header/header";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const [page, setPage] = useState("/");

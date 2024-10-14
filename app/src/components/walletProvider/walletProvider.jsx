@@ -11,7 +11,7 @@ export const WalletProvider = ({ children }) => {
     <AptosWalletAdapterProvider
       autoConnect={autoConnect}
       dappConfig={{
-        network: Network.DEVNET,
+        network: Network.TESTNET,
         aptosApiKey: process.env.REACT_APP_PUBLIC_APTOS_API_KEY,
         aptosConnect: { dappId: process.env.REACT_PUBLIC_APTOS_DAPP_ID },
       }}

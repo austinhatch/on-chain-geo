@@ -7,7 +7,7 @@ import {
 
 async function getGeofences(accountAddress: AccountAddressInput) {
   const aptosConfig = new AptosConfig({
-    network: Network.DEVNET,
+    network: Network.TESTNET,
   });
   const aptos = new Aptos(aptosConfig);
   const resources = await aptos.getAccountOwnedObjects({
@@ -18,7 +18,7 @@ async function getGeofences(accountAddress: AccountAddressInput) {
 
 async function getGeoFenceObjectDetails(objectAddr: string) {
   const aptosConfig = new AptosConfig({
-    network: Network.DEVNET,
+    network: Network.TESTNET,
   });
   const aptos = new Aptos(aptosConfig);
   const resourceType: `${string}::${string}::${string}` =

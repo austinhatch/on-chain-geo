@@ -7,7 +7,7 @@ import {
   Circle,
 } from "@react-google-maps/api";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { getGeoFence } from "../../utils/aptos/getGeos";
+import { getGeoFence } from "../../utils/aptos/geoUtils";
 import { getDistance } from "geolib"; // Import the getDistance function from geolib
 import { toast } from "react-toastify";
 
