@@ -1,8 +1,28 @@
 import React, { useEffect, useState } from "react";
 import styles from "./geoCard.module.scss";
 import MapPicker from "../mapPicker/mapPicker";
+import { getGeoCheckins } from "../../utils/aptos/geoUtils";
 
 const GeoCard = ({ geo }) => {
+  useEffect(() => {
+    const fetchCheckins = async () => {
+      const checkins = await getGeoCheckins(geo.address);
+      console.log(checkins);
+    };
+    fetchCheckins();
+  }, []);
+
+  const copyToClipboard = () => {
+    navigator.clipboard
+      .writeText(geo.address)
+      .then(() => {
+        alert("Address copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+      });
+  };
+
   return (
     <>
       {geo && (
@@ -10,6 +30,10 @@ const GeoCard = ({ geo }) => {
           <div className={styles.geoContainer}>
             <div className={styles.geoInfoContainer}>
               <h3>{geo.name}</h3>
+              <div className={styles.addressContainer}>
+                <input type="text" value={geo.address} readOnly />
+                <button onClick={copyToClipboard}>Copy</button>{" "}
+              </div>
               {geo.startDate && (
                 <p>
                   {geo.startDate.toLocaleDateString()} -

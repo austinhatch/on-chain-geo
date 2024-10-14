@@ -4,7 +4,7 @@ import GeoCard from "../../components/geoCard/geoCard";
 import styles from "./myGeos.module.scss";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { aptos } from "../../configs/aptos";
-import { getGeoFences } from "../../utils/aptos/getOwnedGeos";
+import { getGeoFences } from "../../utils/aptos/geoUtils";
 
 const MyGeos = () => {
   const { wallet, account } = useWallet();

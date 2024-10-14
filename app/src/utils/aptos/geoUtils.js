@@ -36,7 +36,14 @@ export async function getGeoFenceObjectDetails(objectAddr) {
   } catch (e) {}
 }
 
-export async function getGeoCheckins(params) {}
+export async function getGeoCheckins(address) {
+  try {
+    const txs = await aptos.getAccountTransactions({
+      accountAddress: address,
+    });
+    console.log(txs);
+  } catch (e) {}
+}
 
 const formatGeo = (geo) => {
   console.log(geo);
@@ -52,5 +59,6 @@ const formatGeo = (geo) => {
       ? (-1 * Number(geo.geo_coordinate.longitude)) / 10 ** 6
       : Number(geo.geo_coordinate.longitude) / 10 ** 6,
     tokenUri: geo.uri,
+    address: geo.mutator_ref?.self,
   };
 };

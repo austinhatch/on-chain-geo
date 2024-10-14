@@ -9,6 +9,7 @@ import {
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { getGeoFence } from "../../utils/aptos/getGeos";
 import { getDistance } from "geolib"; // Import the getDistance function from geolib
+import { toast } from "react-toastify";
 
 const containerStyle = {
   width: "100%",
@@ -23,7 +24,7 @@ const CheckIn = () => {
   const { wallet, account, signAndSubmitTransaction } = useWallet();
 
   // location of user
-  const [location, setLocation] = useState(null);
+  const [myLocation, setMyLocation] = useState(null);
 
   // location of geo fence
   const [geoLocation, setGeoLocation] = useState(null);
@@ -39,12 +40,37 @@ const CheckIn = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
+  const sendCheckInTransaction = async (address, lat, lng) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/verify-location`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            address: address,
+            lat: lat,
+            lat_is_neg: lat < 0,
+            lng: lng,
+            lng_is_neg: lng < 0,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const handleCheckLocation = async (e) => {
     e.preventDefault();
     //Get user's current location
     console.log("account", account);
     if (!account) {
-      setError("Please connect your wallet to check in");
+      toast.error("Please connect your wallet to check in");
       return;
     }
 
@@ -58,32 +84,40 @@ const CheckIn = () => {
             lng: position.coords.longitude,
           };
           console.log("coordinates", my_coords);
-          setLocation(my_coords);
+          setMyLocation(my_coords);
           setError("");
         },
         (error) => {
-          setError("Unable to retrieve your location");
+          toast.error("Unable to retrieve your location");
         }
       );
 
       //Get geo fence location
       const geo = await getGeoFence(checkInAddress);
-      if (geo) {
+      if (geo && my_coords) {
         const geo_coords = { lat: geo.latitude, lng: geo.longitude };
         console.log("geo_coords", geo_coords);
         setGeoLocation(geo_coords);
+        const geo_radius = geo.radius * 1609.34;
+        console.log("geo_radius", geo_radius);
+        setRadius(geo_radius); // Convert miles to meters
         const distance = getDistance(my_coords, geo_coords);
         console.log("distance", distance);
-        if (distance <= geo.radius) {
-          console.log("Check In Successful");
+        if (distance <= geo_radius) {
+          toast.success("Check In Successful");
+          await sendCheckInTransaction(
+            checkInAddress,
+            my_coords.lng,
+            my_coords.lat
+          );
         } else {
-          setError("You are not within the check in radius");
+          toast.error("You are not within the check in radius");
         }
       } else {
-        setError("Invalid Check In Address");
+        toast.error("Invalid Check In Address");
       }
     } else {
-      setError("Geolocation is not supported by this browser");
+      toast.error("Geolocation is not supported by this browser");
     }
     setLoading(false);
   };
@@ -127,18 +161,18 @@ const CheckIn = () => {
         </div>
       </form>
       {loading && <p>Loading...</p>}
-      {location && (
+      {myLocation && (
         <div className={styles.myLocationContainer}>
           <h3>Your Location</h3>
           <div className={styles.mapContainer}>
             <GoogleMap
               mapContainerStyle={containerStyle}
-              center={location}
+              center={myLocation}
               zoom={10}
             >
-              {location && (
+              {myLocation && (
                 <>
-                  <Marker position={location} icon={customIcon1} />
+                  <Marker position={myLocation} icon={customIcon1} />
                 </>
               )}
               {geoLocation && (
@@ -151,7 +185,7 @@ const CheckIn = () => {
                     }}
                     radius={radius} // Radius in meters
                     options={{
-                      fillColor: "rgba(0, 0, 255, 0.2)",
+                      fillColor: "rgba(0, 0, 255, 0.8)",
                       strokeColor: "rgba(0, 0, 255, 0.5)",
                       strokeWeight: 2,
                     }}
