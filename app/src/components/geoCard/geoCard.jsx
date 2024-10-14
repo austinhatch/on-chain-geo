@@ -4,10 +4,12 @@ import MapPicker from "../mapPicker/mapPicker";
 import { getGeoCheckins } from "../../utils/aptos/geoUtils";
 
 const GeoCard = ({ geo }) => {
+  const [checkIns, setCheckIns] = useState(0);
+
   useEffect(() => {
     const fetchCheckins = async () => {
-      const checkins = await getGeoCheckins(geo.address);
-      console.log(checkins);
+      const mints = await getGeoCheckins(geo.address);
+      setCheckIns(mints);
     };
     fetchCheckins();
   }, []);
@@ -47,7 +49,7 @@ const GeoCard = ({ geo }) => {
             </div>
             <div className={styles.checkinsContainer}>
               <h4>Check Ins</h4>
-              {/* <p>{geo.checkins}</p> */}
+              <p>{checkIns}</p>
             </div>
           </div>
           <div className={styles.mapContainer}>

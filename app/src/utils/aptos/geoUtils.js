@@ -33,16 +33,19 @@ export async function getGeoFenceObjectDetails(objectAddr) {
     });
     console.log(resource);
     return resource;
-  } catch (e) {}
+  } catch (e) { }
 }
 
-export async function getGeoCheckins(address) {
+export async function getGeoCheckins(collectionAddress) {
   try {
-    const txs = await aptos.getAccountTransactions({
-      accountAddress: address,
-    });
-    console.log(txs);
-  } catch (e) {}
+    const collectionData = await aptos.getCollectionDataByCollectionId({
+      collectionId: collectionAddress,
+    })
+    console.log(collectionData);
+    return collectionData.total_minted_v2;
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 const formatGeo = (geo) => {

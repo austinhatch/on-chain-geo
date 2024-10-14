@@ -5,11 +5,13 @@ import styles from "./app.module.scss";
 import CreateGeos from "./pages/createGeos/createGeos";
 import MyGeos from "./pages/myGeos/myGeos";
 import Header from "./components/header/header";
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
   const [page, setPage] = useState("/");
   return (
     <>
+      <ToastContainer />
       <div className={styles.header}>
         <Header setPage={setPage} />
       </div>

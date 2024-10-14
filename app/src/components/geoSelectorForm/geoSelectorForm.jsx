@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./geoSelectorForm.module.scss";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { aptos } from "../../configs/aptos";
+import { toast } from "react-toastify";
 
 const GeoSelectorForm = ({
   coordinates,
@@ -39,7 +40,12 @@ const GeoSelectorForm = ({
       console.log("Edit Mode");
     } else {
       console.log("Create Mode");
-      await createGeo();
+      const success = await createGeo();
+      if (success) {
+        toast.success("Geo created successfully!");
+      } else {
+        toast.error("Failed to create Geo.");
+      }
     }
   };
 
@@ -82,8 +88,10 @@ const GeoSelectorForm = ({
     });
     try {
       await aptos.waitForTransaction({ transactionHash: response.hash });
+      return true;
     } catch (error) {
       console.error(error);
+      return false;
     }
   };
 
