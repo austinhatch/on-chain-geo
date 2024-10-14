@@ -40,7 +40,7 @@ const CheckIn = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
-  const sendCheckInTransaction = async (address, lat, lng) => {
+  const sendCheckInTransaction = async (geo_address, lat, lng, user_address) => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/verify-location`,
@@ -50,11 +50,12 @@ const CheckIn = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            address: address,
+            geo_address: geo_address,
             lat: lat,
             lat_is_neg: lat < 0,
             lng: lng,
             lng_is_neg: lng < 0,
+            user_address: user_address,
           }),
         }
       );
@@ -108,7 +109,8 @@ const CheckIn = () => {
           await sendCheckInTransaction(
             checkInAddress,
             my_coords.lng,
-            my_coords.lat
+            my_coords.lat,
+            account.accountAddress
           );
         } else {
           toast.error("You are not within the check in radius");

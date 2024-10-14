@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Handle POST request
 app.post("/api/verify-location", async (req, res) => {
-  const { address, lat, lat_is_neg, lng, lng_is_neg } = req.body;
+  const { geo_address, lat, lat_is_neg, lng, lng_is_neg, user_address } = req.body;
 
   try {
     // Create the transaction payload
@@ -27,12 +27,13 @@ app.post("/api/verify-location", async (req, res) => {
         function: func,
         typeArguments: [],
         functionArguments: [
-          address,
+          geo_address,
           lng,
           lng_is_neg,
           lat,
           lat_is_neg,
           token_id,
+          user_address
         ],
       },
     });
@@ -59,5 +60,5 @@ app.post("/api/verify-location", async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on ${port}`);
 });
