@@ -1,29 +1,29 @@
 import React, { useEffect, useState } from "react";
-import styles from "./geoCard.module.scss";
+import styles from "./checkInCard.module.scss";
 
 const CheckInCard = ({ tokenData }) => {
   const [metadata, setMetadata] = useState(null);
   const [geoData, setGeoData] = useState(null);
+  console.log(tokenData);
 
   useEffect(() => {
     const getGeoData = async () => {
       // fetch metadata
       // const metadata = await getMetadata(tokenData.tokenId);
       // setMetadata(metadata);
-
       // fetch geo data
-      const geoData = await getGeoDataFromCollection(tokenData.tokenId);
-      setGeoData(geoData);
+      // const geoData = await getGeoDataFromCollection(tokenData.tokenId);
+      // setGeoData(geoData);
     };
     getGeoData();
   }, []);
 
   return (
     <>
-      {geo && (
+      {tokenData && (
         <div className={styles.parentContainer}>
-          <div className={styles.geoContainer}>
-            <div className={styles.geoInfoContainer}>
+          <div className={styles.checkInContainer}>
+            <div className={styles.checkinInfoContainer}>
               <h3>{geo.name}</h3>
               {geo.startDate && (
                 <p>
@@ -46,29 +46,10 @@ const CheckInCard = ({ tokenData }) => {
               <button>Delete</button>
             </div>
           </div>
-          {editMode && (
-            <div className={styles.editContainer}>
-              <div className={styles.mapPicker}>
-                <MapPicker
-                  onCoordinateSelect={handleCoordinateSelect}
-                  coordinates={selectedCoordinates}
-                  radius={selectedRadius}
-                />
-              </div>
-              <div className={styles.geoSelectorForm}>
-                <GeoSelectorForm
-                  coordinates={selectedCoordinates}
-                  prefillData={geo}
-                  setSelectedRadius={handleRadiusSelect}
-                  editMode={true}
-                />
-              </div>
-            </div>
-          )}
         </div>
       )}
     </>
   );
 };
 
-export default GeoCard;
+export default CheckInCard;

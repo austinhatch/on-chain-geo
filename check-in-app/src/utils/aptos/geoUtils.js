@@ -20,7 +20,7 @@ export async function getGeoFenceObjectDetails(objectAddr) {
       resourceType: resourceType,
     });
     return resource;
-  } catch (e) { }
+  } catch (e) {}
 }
 
 export async function getOwnedCheckins(address) {
@@ -28,14 +28,18 @@ export async function getOwnedCheckins(address) {
   const tokens = await aptos.getAccountOwnedTokens({
     accountAddress: address,
   });
-  console.log(tokens);
+  // console.log(tokens);
   let checkIns = [];
   //Find the tokens that are check ins
   for (const token of tokens) {
-    if (token.collection_id === process.env.REACT_APP_CHECKIN_COLLECTION) {
+    if (
+      token.current_token_data?.current_collection?.creator_address ===
+      process.env.REACT_APP_GEO_CONTRACT_ADDRESS
+    ) {
       checkIns.push(token);
     }
   }
+  console.log(checkIns);
   return checkIns;
 }
 
