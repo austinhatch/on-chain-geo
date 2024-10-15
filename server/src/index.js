@@ -1,6 +1,8 @@
-const express = require("express");
-require("dotenv").config();
-import { aptos } from "./configs/aptos";
+import express from "express";
+import { aptos } from "./configs/aptos.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3002; // Your server will run on localhost:3001
@@ -9,7 +11,8 @@ app.use(express.json());
 
 // Handle POST request
 app.post("/api/verify-location", async (req, res) => {
-  const { geo_address, lat, lat_is_neg, lng, lng_is_neg, user_address } = req.body;
+  const { geo_address, lat, lat_is_neg, lng, lng_is_neg, user_address } =
+    req.body;
 
   try {
     // Create the transaction payload
@@ -33,7 +36,7 @@ app.post("/api/verify-location", async (req, res) => {
           lat,
           lat_is_neg,
           token_id,
-          user_address
+          user_address,
         ],
       },
     });
