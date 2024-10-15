@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./myCheckIns.module.scss";
 import { getOwnedCheckins } from "../../utils/aptos/geoUtils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import CheckInCard from "../../components/checkInCard/checkInCard";
 
 const MyCheckIns = () => {
   const [checkIns, setCheckIns] = useState([]);
@@ -24,12 +25,14 @@ const MyCheckIns = () => {
         {checkIns.length === 0 ? (
           <p>No check ins found</p>
         ) : (
-          checkIns.map((checkIn, index) => {
-            return <CheckInCard key={index} checkIn={checkIn} />;
+          checkIns.map((checkIn) => {
+            return <>
+              <CheckInCard tokenData={checkIn} />
+            </>
           })
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
