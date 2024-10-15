@@ -40,8 +40,22 @@ const CheckIn = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
-  const sendCheckInTransaction = async (geo_address, lat, lng, user_address) => {
+  const sendCheckInTransaction = async (
+    geo_address,
+    lat,
+    lng,
+    user_address
+  ) => {
     try {
+      const req_data = {
+        geo_address: geo_address,
+        lat: Math.abs(Math.round(lat * 10 ** 6)),
+        lat_is_neg: lat < 0,
+        lng: Math.abs(Math.round(lng * 10 ** 6)),
+        lng_is_neg: lng < 0,
+        user_address: user_address,
+      };
+      console.log(req_data);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/verify-location`,
         {
@@ -49,14 +63,7 @@ const CheckIn = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            geo_address: geo_address,
-            lat: lat,
-            lat_is_neg: lat < 0,
-            lng: lng,
-            lng_is_neg: lng < 0,
-            user_address: user_address,
-          }),
+          body: JSON.stringify(req_data),
         }
       );
       const data = await response.json();
@@ -77,51 +84,63 @@ const CheckIn = () => {
 
     if (navigator.geolocation) {
       setLoading(true);
-      let my_coords = null;
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          my_coords = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          console.log("coordinates", my_coords);
-          setMyLocation(my_coords);
-          setError("");
-        },
-        (error) => {
-          toast.error("Unable to retrieve your location");
-        }
-      );
-
-      //Get geo fence location
-      const geo = await getGeoFence(checkInAddress);
-      if (geo && my_coords) {
-        const geo_coords = { lat: geo.latitude, lng: geo.longitude };
-        console.log("geo_coords", geo_coords);
-        setGeoLocation(geo_coords);
-        const geo_radius = geo.radius * 1609.34;
-        console.log("geo_radius", geo_radius);
-        setRadius(geo_radius); // Convert miles to meters
-        const distance = getDistance(my_coords, geo_coords);
-        console.log("distance", distance);
-        if (distance <= geo_radius) {
-          toast.success("Check In Successful");
-          await sendCheckInTransaction(
-            checkInAddress,
-            my_coords.lng,
-            my_coords.lat,
-            account.accountAddress
+      try {
+        const my_coords = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const coords = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+              resolve(coords);
+            },
+            (error) => {
+              reject(new Error("Unable to retrieve your location"));
+            }
           );
+        });
+
+        console.log("coordinates", my_coords);
+        setMyLocation(my_coords);
+        setError("");
+
+        //Get geo fence location
+        const geo = await getGeoFence(checkInAddress);
+        console.log("geo", geo);
+        console.log("my_coords", my_coords);
+
+        if (geo && my_coords) {
+          const geo_coords = { lat: geo.latitude, lng: geo.longitude };
+          console.log("geo_coords", geo_coords);
+          setGeoLocation(geo_coords);
+          const geo_radius = geo.radius * 1609.34;
+          console.log("geo_radius", geo_radius);
+          setRadius(geo_radius); // Convert miles to meters
+          const distance = getDistance(my_coords, geo_coords);
+          console.log("distance", distance);
+          if (distance <= geo_radius) {
+            toast.success("Check In Successful");
+            await sendCheckInTransaction(
+              checkInAddress,
+              my_coords.lng,
+              my_coords.lat,
+              account.address
+            );
+          } else {
+            toast.error("You are not within the check in radius");
+          }
         } else {
-          toast.error("You are not within the check in radius");
+          toast.error("Invalid Check In Address");
         }
-      } else {
-        toast.error("Invalid Check In Address");
+      } catch (error) {
+        toast.error("Error checking in");
+      } finally {
+        setLoading(false);
       }
     } else {
+      setError("Geolocation is not supported by this browser");
       toast.error("Geolocation is not supported by this browser");
     }
-    setLoading(false);
   };
 
   if (!isLoaded) {

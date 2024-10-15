@@ -1,4 +1,6 @@
 import express from "express";
+import cors from "cors";
+
 import { aptos, getAptosAccount } from "./configs/aptos.js";
 import dotenv from "dotenv";
 
@@ -8,6 +10,7 @@ const app = express();
 const port = process.env.PORT || 3002; // Your server will run on localhost:3002
 
 app.use(express.json());
+app.use(cors());
 
 app.post("/api/verify-location", async (req, res) => {
   console.log(req.body);
@@ -21,6 +24,8 @@ app.post("/api/verify-location", async (req, res) => {
     // Get the account from the config
     const aptosAccount = getAptosAccount();
     console.log(aptosAccount);
+
+    console.log(geo_address);
 
     //Generate a random token_id
     const token_id = Math.floor(10000000 + Math.random() * 90000000).toString();

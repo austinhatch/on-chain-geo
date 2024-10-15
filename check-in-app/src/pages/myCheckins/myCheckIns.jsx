@@ -15,7 +15,7 @@ const MyCheckIns = () => {
       setCheckIns(checkIns);
     };
     getCheckIns();
-  }, []);
+  }, [account]);
   return (
     <div className={styles.parentContainer}>
       <div className={styles.headerContainer}>
@@ -26,13 +26,15 @@ const MyCheckIns = () => {
           <p>No check ins found</p>
         ) : (
           checkIns.map((checkIn) => {
-            return <>
-              <CheckInCard tokenData={checkIn} />
-            </>
+            return (
+              <>
+                <CheckInCard tokenData={checkIn} />
+              </>
+            );
           })
         )}
       </div>
-    </div >
+    </div>
   );
 };
 
